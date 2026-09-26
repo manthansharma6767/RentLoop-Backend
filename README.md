@@ -771,9 +771,6 @@ The project aims to demonstrate practical implementation of:
 **RentLoop — RBU Project**
 
 * Manthan Sharma
-* Kartikeya Trivedi
-* Aryan Rajendrakumar Kanade
-* Devesh Vijay Kahar
 
 Department of Computer Science and Engineering
 Ramdeobaba University
