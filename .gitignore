@@ -1,33 +1,113 @@
-HELP.md
+# =========================
+
+# Java / Maven
+
+# =========================
+
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# =========================
+
+# IDE
+
+# =========================
+
+.idea/
 *.iml
+*.iws
 *.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
 .vscode/
+.classpath
+.project
+.settings/
+
+# =========================
+
+# OS
+
+# =========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+
+# Logs
+
+# =========================
+
+*.log
+logs/
+
+# =========================
+
+# Environment / Secrets
+
+# =========================
+
+.env
+.env.*
+!.env.example
+
+application-local.properties
+application-secret.properties
+application-prod.properties
+
+# =========================
+
+# Spring Boot
+
+# =========================
+
+spring-boot-devtools.properties
+
+# =========================
+
+# Build / Generated Files
+
+# =========================
+
+*.class
+*.jar
+*.war
+*.zip
+
+# =========================
+
+# Test / Coverage
+
+# =========================
+
+.coverage/
+jacoco.exec
+
+# =========================
+
+# Temporary Files
+
+# =========================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# =========================
+
+# Database / Local Data
+
+# =========================
+
+*.sql.bak
+*.db
+*.sqlite
+*.sqlite3
