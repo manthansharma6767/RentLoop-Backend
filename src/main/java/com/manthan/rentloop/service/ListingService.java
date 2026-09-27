@@ -79,7 +79,7 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
-    private ListingResponse mapToResponse(Listing listing) {
+    public ListingResponse mapToResponse(Listing listing) {
         ListingResponse response = new ListingResponse();
         response.setId(listing.getId());
         response.setTitle(listing.getTitle());

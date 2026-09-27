@@ -39,4 +39,19 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+
+    @Query("SELECT l FROM Listing l WHERE l.status = 'ACTIVE' " +
+            "AND l.item.category.id = :categoryId " +
+            "AND l.pricePerDay <= :budgetPerDay " +
+            "AND NOT EXISTS (" +
+            "  SELECT b FROM Booking b WHERE b.listing = l " +
+            "  AND b.status IN ('CONFIRMED', 'ACTIVE') " +
+            "  AND b.startDate <= :endDate AND b.endDate >= :startDate" +
+            ")")
+    List<Listing> findMatchingListings(
+            @Param("categoryId") Long categoryId,
+            @Param("budgetPerDay") BigDecimal budgetPerDay,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
