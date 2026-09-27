@@ -10,7 +10,11 @@ import com.manthan.rentloop.repository.ListingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,5 +95,29 @@ public class ListingService {
                     .map(ListingImage::getImageUrl).collect(Collectors.toList()));
         }
         return response;
+    }
+
+    public Page<ListingResponse> searchAvailableListings(
+            Long categoryId,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable) {
+
+        // Validation: If one date is provided, both must be provided
+        if ((startDate != null && endDate == null) || (startDate == null && endDate != null)) {
+            throw new IllegalArgumentException("Both start date and end date must be provided for availability check.");
+        }
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date.");
+        }
+
+        Page<Listing> listingsPage = listingRepository.searchListings(
+                categoryId, minPrice, maxPrice, startDate, endDate, pageable
+        );
+
+        // Map the Page of Entities to a Page of DTOs
+        return listingsPage.map(this::mapToResponse);
     }
 }
