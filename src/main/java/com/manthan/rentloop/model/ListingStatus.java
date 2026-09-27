@@ -1,4 +1,6 @@
 package com.manthan.rentloop.model;
-
-public class ListingStatus {
+public enum ListingStatus {
+    ACTIVE,
+    INACTIVE,
+    REMOVED
 }
