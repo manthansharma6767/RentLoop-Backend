@@ -1,0 +1,24 @@
+$kind: collection
+name: Rentloop WebSocket
+description: |-
+  STOMP-over-WebSocket client for Rentloop chat messaging.
+
+  Connect to ws://localhost:8080/ws, then send these null-terminated STOMP frames (replace each <NUL> marker with an actual NUL byte).
+
+  SUBSCRIBE frame:
+
+  SUBSCRIBE
+  id:messages-subscription
+  destination:/user/queue/messages
+  ack:auto
+
+  <NUL>
+
+  SEND frame:
+
+  SEND
+  destination:/app/chat.send
+  content-type:application/json
+
+  { "bookingId": 1, "senderEmail": "renter@test.com", "receiverEmail": "owner@test.com", "content": "Testing STOMP broker routing" }
+  <NUL>
