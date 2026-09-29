@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/health").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/health", "/ws/**").permitAll()
                         // 2. ALLOW ANYONE TO BROWSE CATEGORIES
                         .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                         .anyRequest().authenticated()
@@ -62,6 +62,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/ws/**", configuration);
         return source;
     }
 
