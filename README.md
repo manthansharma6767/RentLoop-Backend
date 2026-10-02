@@ -1,784 +1,498 @@
-# RentLoop
+<div align="center">
 
-### Peer-to-Peer Rental Platform for the University Community
+# 🔄 RentLoop
 
-RentLoop is a web-based peer-to-peer rental platform designed initially for the university community. It enables users to list items for rent, discover available items, submit rental requests when an item is unavailable, communicate with owners, manage bookings, and build trust through ratings and reviews.
+### Peer-to-Peer Rental Marketplace for the University Community
 
-The platform is designed to be **category-agnostic**, allowing users to rent a wide range of items such as laptops, tablets, gaming consoles, cameras, musical instruments, printers, bicycles, clothing, sports equipment, and more.
+[![Java CI with Maven](https://github.com/manthansharma6767/RentLoop-Backend/actions/workflows/maven.yml/badge.svg)](https://github.com/manthansharma6767/RentLoop-Backend/actions/workflows/maven.yml)
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?style=flat&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)
+![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?style=flat&logo=mysql&logoColor=white)
+![License](https://img.shields.io/badge/License-Academic-blue?style=flat)
 
----
+**RentLoop** is a full-stack, category-agnostic rental platform that lets university students list, discover, request, and rent virtually any item — from laptops and cameras to bicycles and musical instruments. Built with **Spring Boot** on the backend and **React + Vite** on the frontend, it features real-time chat, intelligent request-to-listing matching, a controlled booking lifecycle, and a trust-building review system.
 
-## Overview
+[Features](#-key-features) · [Architecture](#-system-architecture) · [Tech Stack](#-technology-stack) · [Getting Started](#-getting-started) · [API Reference](#-api-reference) · [Roadmap](#-development-roadmap)
 
-Traditional classified platforms are primarily designed for buying and selling, while many rental platforms focus on a specific category such as vehicles, fashion, or electronics.
-
-RentLoop addresses this limitation by providing a unified rental marketplace where:
-
-* Owners can list virtually any item for rent.
-* Renters can search and filter available listings.
-* Renters can create rental requests when a suitable listing does not exist.
-* The platform can match rental requests with relevant listings.
-* Owners and renters can communicate through real-time chat.
-* Rentals follow a controlled booking lifecycle.
-* Users can rate and review each other after completed rentals.
-
-The initial target audience is the **RBU/university community**, with the architecture designed to be extensible to a broader user base.
+</div>
 
 ---
 
-## Key Features
+## ✨ Key Features
 
-### Authentication & Authorization
+<table>
+<tr>
+<td width="50%">
 
-* User registration and login
-* JWT-based authentication
-* BCrypt password hashing
-* Role-based authorization
-* USER and ADMIN roles
-* Protected REST APIs
+### 🔐 Authentication & Security
+- JWT-based stateless authentication
+- BCrypt password hashing
+- Role-based access control (`USER` / `ADMIN`)
+- Protected REST endpoints
+- Spring Security integration
 
-### Item & Listing Management
+</td>
+<td width="50%">
 
-* Create rental listings
-* Update and delete listings
-* Category-based organization
-* Item condition
-* Rental pricing
-* Security deposits
-* Item availability
-* Location information
-* Image support
+### 📦 Item & Listing Management
+- Create, update, and delete rental listings
+- Category-based organization with extensible attributes
+- Item condition tracking & security deposits
+- Multi-image upload via Cloudinary
+- Location-aware listings (Google Maps)
 
-### Category-Agnostic Item Model
+</td>
+</tr>
+<tr>
+<td width="50%">
 
-RentLoop does not create separate database tables for every item type.
+### 🔍 Rental Requests & Matching
+- Open rental requests for unmet demand
+- Intelligent matching engine (category, budget, location, dates)
+- Reverse-demand workflow connecting renters to owners
+- Status lifecycle management
 
-A single generic `Item` model can represent:
+</td>
+<td width="50%">
 
-```text
-Laptop
-Tablet
-PS5
-Camera
-Guitar
-Printer
-Bicycle
-Shirt
-Sports Equipment
-...
+### 📅 Booking Lifecycle
+- State-based workflow: `REQUESTED → CONFIRMED → ACTIVE → RETURNED`
+- Cancellation support
+- Date-overlap & availability validation
+- Booking history tracking
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 💬 Real-Time Chat
+- WebSocket + STOMP protocol
+- Persistent conversations
+- Rental-contextualized messaging
+- Conversation history retrieval
+
+</td>
+<td width="50%">
+
+### ⭐ Ratings & Reviews
+- Bidirectional reviews (renter ↔ owner)
+- Duplicate-prevention per booking
+- Trust & reputation scoring
+- Review aggregation per user
+
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+### 🔔 Notifications
+Real-time, in-app notifications for booking requests, confirmations, cancellations, rental returns, matching alerts, and new reviews.
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🧬 Category-Agnostic Item Model
+
+RentLoop uses a single, flexible `Item` entity with extensible attributes — **no schema changes needed** when adding new item types.
+
+```
+Dell Laptop                     Yamaha Guitar
+├── RAM: 16GB                   ├── Type: Acoustic
+├── Storage: 512GB              ├── Strings: 6
+└── Processor: Intel i7         └── Brand: Yamaha
 ```
 
-Category-specific information is handled using an extensible attribute model.
+Supported categories include laptops, tablets, gaming consoles, cameras, musical instruments, printers, bicycles, clothing, sports equipment, and more.
 
-For example:
+---
 
-```text
-Dell Laptop
-├── RAM: 16GB
-├── Storage: 512GB
-└── Processor: Intel i7
+## 🏗 System Architecture
+
 ```
-
-and:
-
-```text
-Yamaha Guitar
-├── Type: Acoustic
-├── Strings: 6
-└── Brand: Yamaha
-```
-
-This allows new item types to be introduced without changing the database schema.
-
----
-
-## Rental Request & Matching
-
-If a renter cannot find a suitable listing, they can create an open rental request.
-
-Example:
-
-```text
-Item: PS5
-Budget: ₹700/day
-Duration: 3 days
-Location: Near RBU
-Required Dates: 10–13 October
-```
-
-The matching engine can compare rental requests against available listings using factors such as:
-
-* Category
-* Item/name
-* Location
-* Budget
-* Availability
-* Required dates
-
-This creates a reverse-demand workflow where renters can signal unmet demand to potential owners.
-
----
-
-## Booking Lifecycle
-
-Bookings follow a controlled state-based workflow:
-
-```text
-REQUESTED
-    ↓
-CONFIRMED
-    ↓
-ACTIVE
-    ↓
-RETURNED
-```
-
-Cancellation is also supported where applicable.
-
-The backend validates booking state transitions and checks item availability before confirming a rental.
-
----
-
-## Real-Time Communication
-
-RentLoop uses **Spring WebSocket with STOMP** for real-time communication between renters and owners.
-
-The chat system supports:
-
-* Conversations
-* Real-time messages
-* Message persistence
-* Rental-related communication
-* Retrieval of previous conversations
-
----
-
-## Notifications
-
-The notification system can inform users about important platform events, including:
-
-* New rental requests
-* Matching listings
-* Booking requests
-* Booking confirmations
-* Booking cancellations
-* Rental returns
-* Ratings and reviews
-* Relevant messages
-
-The initial implementation uses application/database-backed notifications, with Kafka planned for event-driven processing.
-
----
-
-## Ratings & Reviews
-
-After a rental is completed:
-
-* Renters can rate owners.
-* Owners can rate renters.
-* Reviews can be submitted.
-* Duplicate ratings for the same booking are prevented.
-
-The rating system contributes to trust and reputation within the marketplace.
-
----
-
-# System Architecture
-
-RentLoop is designed as a **modular monolith** using a layered Spring Boot architecture.
-
-```text
-                    ┌─────────────────────┐
-                    │       Client        │
-                    │   React Frontend    │
-                    └──────────┬──────────┘
-                               │
-                        REST / WebSocket
+                    ┌──────────────────────────┐
+                    │     React + Vite (SPA)    │
+                    │    TailwindCSS · Axios    │
+                    └────────────┬─────────────┘
+                                 │
+                          REST / WebSocket
+                                 │
+                                 ▼
+              ┌──────────────────────────────────┐
+              │         Spring Boot 4.1.1        │
+              │                                  │
+              │  Controllers → Services → Repos  │
+              │       JPA / Hibernate ORM        │
+              │    Spring Security + JWT Auth     │
+              │     WebSocket + STOMP Chat       │
+              └────────────────┬─────────────────┘
                                │
                                ▼
-              ┌────────────────────────────────┐
-              │        Spring Boot API         │
-              │                                │
-              │  Controllers                   │
-              │       ↓                        │
-              │  Services                      │
-              │       ↓                        │
-              │  Repositories                  │
-              │       ↓                        │
-              │  JPA / Hibernate               │
-              └───────────────┬────────────────┘
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │    MySQL    │
-                       └─────────────┘
+                        ┌─────────────┐
+                        │  MySQL 8.4  │
+                        └─────────────┘
 
-        External / Supporting Services
+              ┌────────────┐      ┌──────────────┐
+              │ Cloudinary │      │ Google Maps  │
+              │  (Images)  │      │  (Location)  │
+              └────────────┘      └──────────────┘
 
-        ┌────────────┐  ┌────────────┐
-        │ Cloudinary │  │ Google Maps│
-        │   Images   │  │  Location  │
-        └────────────┘  └────────────┘
-
-        Advanced Infrastructure
-
-              ┌──────────┐
-              │  Redis   │
-              │ Cache /  │
-              │  Locks   │
-              └──────────┘
-
-              ┌──────────┐
-              │  Kafka   │
-              │  Events  │
-              └──────────┘
+         Planned ─────────────────────────────────
+              ┌──────────┐      ┌──────────┐
+              │  Redis   │      │  Kafka   │
+              │  Cache   │      │  Events  │
+              └──────────┘      └──────────┘
 ```
 
 ---
 
-# Technology Stack
+## 🛠 Technology Stack
 
-## Backend
+### Backend
 
-| Technology         | Purpose                        |
-| ------------------ | ------------------------------ |
-| Java 21            | Programming language           |
-| Spring Boot        | Backend framework              |
-| Spring Web         | REST APIs                      |
-| Spring Security    | Authentication & authorization |
-| JWT                | Stateless authentication       |
-| BCrypt             | Password hashing               |
-| Spring Data JPA    | Data access                    |
-| Hibernate          | ORM                            |
-| MySQL              | Relational database            |
-| Jakarta Validation | Request validation             |
-| WebSocket / STOMP  | Real-time communication        |
-| Maven              | Dependency management          |
-| Swagger / OpenAPI  | API documentation              |
-| JUnit              | Testing                        |
-| Mockito            | Unit testing                   |
+| Technology | Version | Purpose |
+|---|---|---|
+| Java | 17 | Core language |
+| Spring Boot | 4.1.1 | Application framework |
+| Spring Security | — | Authentication & authorization |
+| JJWT | 0.12.5 | JWT token management |
+| Spring Data JPA | — | Data access layer |
+| Hibernate | — | Object-relational mapping |
+| Spring WebSocket | — | Real-time communication (STOMP) |
+| Jakarta Validation | — | Request validation |
+| Lombok | — | Boilerplate reduction |
+| MySQL Connector/J | — | Database driver |
+| Maven | — | Build & dependency management |
 
-## External Services
+### Frontend
 
-| Service                 | Purpose           |
-| ----------------------- | ----------------- |
-| Cloudinary              | Image storage     |
+| Technology | Version | Purpose |
+|---|---|---|
+| React | 19 | UI library |
+| Vite | 8 | Build tool & dev server |
+| React Router | 7 | Client-side routing |
+| Axios | 1.20 | HTTP client |
+| Tailwind CSS | 4 | Utility-first styling |
+| Lucide React | 1.48 | Icon library |
+
+### External Services
+
+| Service | Purpose |
+|---|---|
+| Cloudinary | Image storage & CDN |
 | Google Maps / Geocoding | Location services |
 
-## Advanced Infrastructure
+### CI/CD
 
-| Technology   | Purpose                                                  |
-| ------------ | -------------------------------------------------------- |
-| Redis        | Caching, rate limiting, temporary data and booking locks |
-| Apache Kafka | Event-driven communication and asynchronous processing   |
-
-Redis and Kafka will be introduced after the core application is stable rather than adding unnecessary infrastructure during initial development.
+| Tool | Purpose |
+|---|---|
+| GitHub Actions | Automated build & test on push/PR to `main` |
+| MySQL 8.4 (service container) | Integration testing in CI |
 
 ---
 
-# Backend Architecture
+## 📂 Project Structure
 
-The backend follows a layered structure:
-
-```text
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
-MySQL
 ```
-
-Recommended package structure:
-
-```text
-com.rentloop
+RentLoop-Backend/
 │
-├── controller
-├── service
-├── repository
-├── entity
-├── dto
-├── mapper
-├── security
-├── config
-├── exception
-└── util
+├── src/main/java/com/manthan/rentloop/
+│   ├── RentloopApplication.java        # Entry point
+│   ├── configuration/
+│   │   ├── SecurityConfig.java         # Spring Security & CORS
+│   │   └── WebSocketConfig.java        # WebSocket/STOMP setup
+│   ├── controller/
+│   │   ├── AuthController.java         # Login & registration
+│   │   ├── UserController.java         # User profiles
+│   │   ├── CategoryController.java     # Category CRUD
+│   │   ├── ItemController.java         # Item management
+│   │   ├── ListingController.java      # Listing CRUD & search
+│   │   ├── BookingController.java      # Booking lifecycle
+│   │   ├── RentalRequestController.java# Rental requests
+│   │   ├── ChatController.java         # Real-time messaging
+│   │   ├── ReviewController.java       # Ratings & reviews
+│   │   └── NotificationController.java # User notifications
+│   ├── service/                        # Business logic layer
+│   ├── repository/                     # Spring Data JPA repos
+│   ├── model/                          # JPA entities & enums
+│   ├── dto/                            # Request/response DTOs
+│   ├── security/                       # JWT filter & utilities
+│   └── exception/                      # Global exception handler
+│
+├── rentloop-frontend/
+│   └── src/
+│       ├── App.jsx                     # Route definitions
+│       ├── pages/                      # Dashboard, Rent, Requests...
+│       ├── components/                 # Navbar, Login, Register...
+│       ├── context/                    # Auth context provider
+│       └── api/                        # Axios API layer
+│
+├── .github/workflows/maven.yml        # CI pipeline
+├── .env.example                        # Environment variable template
+├── pom.xml                             # Maven configuration
+└── postman/                            # Postman collections
 ```
-
-### Architectural Principles
-
-* Separation of concerns
-* SOLID principles
-* DTO-based API design
-* Centralized exception handling
-* Validation at API boundaries
-* Transaction management
-* Role-based authorization
-* Database constraints
-* Meaningful HTTP status codes
-* Modular and maintainable code
 
 ---
 
-# Core Domain Model
+## 🗃 Domain Model
 
-The backend is centered around the following entities:
-
-```text
-User
-Category
-Item
-ItemAttribute
-Listing
-Availability
-RentalRequest
-Booking
-Conversation
-Message
-Rating
-Notification
 ```
-
-High-level relationship:
-
-```text
 User
  │
- ├───────────────┐
- │               │
- ▼               ▼
-Item          RentalRequest
+ ├── Item ──→ ItemAttribute
+ │    │
+ │    └── Listing ──→ ListingImage
+ │         │
+ │         └── Booking
+ │              ├── Review
+ │              └── Conversation ──→ ChatMessage
  │
- ▼
-Listing
+ ├── RentalRequest ──→ RequestMatch
  │
- ▼
-Booking
- │
- ├───────────────┐
- ▼               ▼
-Conversation    Rating
- │
- ▼
-Message
+ └── Notification
 ```
 
----
-
-# Project Development Roadmap
-
-The backend is being developed incrementally.
-
-### Phase 1 — Project Setup
-
-* Spring Boot setup
-* Maven configuration
-* Java 21
-* MySQL configuration
-* Package structure
-* Basic API health check
-
-### Phase 2 — Database Foundation
-
-* User
-* Category
-* Item
-* ItemAttribute
-* JPA relationships
-
-### Phase 3 — Authentication & Security
-
-* Registration
-* Login
-* JWT
-* BCrypt
-* Spring Security
-* Roles
-
-### Phase 4 — User & Category APIs
-
-* User profiles
-* Category management
-* Admin authorization
-
-### Phase 5 — Items & Listings
-
-* Item management
-* Item attributes
-* Listing management
-* Images
-* Ownership validation
-
-### Phase 6 — Availability & Search
-
-* Availability management
-* Date-overlap validation
-* Search
-* Filtering
-* Pagination
-* Sorting
-
-### Phase 7 — Rental Requests
-
-* Create requests
-* Update requests
-* Cancel requests
-* Request status management
-
-### Phase 8 — Matching Engine
-
-* Listing/request matching
-* Category matching
-* Location matching
-* Budget matching
-* Availability matching
-
-### Phase 9 — Booking
-
-* Booking requests
-* Confirmation
-* Cancellation
-* Rental activation
-* Return workflow
-* Booking history
-
-### Phase 10 — Real-Time Chat
-
-* Conversations
-* Messages
-* WebSocket
-* STOMP
-* Message persistence
-
-### Phase 11 — Notifications
-
-* Booking notifications
-* Matching notifications
-* Rental notifications
-* User notifications
-
-### Phase 12 — Ratings & Reviews
-
-* Owner ratings
-* Renter ratings
-* Reviews
-* Reputation
-
-### Phase 13 — Administration
-
-* User management
-* Listing moderation
-* Category management
-* Basic statistics
-
-### Phase 14 — Testing & Documentation
-
-* Unit tests
-* Integration tests
-* Security tests
-* Booking tests
-* Matching tests
-* Swagger/OpenAPI
-
-### Phase 15 — Redis
-
-* Listing caching
-* Category caching
-* Rate limiting
-* Temporary data
-* Booking locks
-
-### Phase 16 — Kafka
-
-* Domain events
-* Booking events
-* Matching events
-* Notification events
-* Asynchronous processing
+**Core Entities:** `User` · `Category` · `Item` · `ItemAttribute` · `Listing` · `ListingImage` · `Booking` · `RentalRequest` · `RequestMatch` · `Conversation` · `ChatMessage` · `Review` · `Notification`
 
 ---
 
-# API Structure
+## 🚀 Getting Started
 
-The REST API is organized by domain:
+### Prerequisites
 
-```text
-/api/auth
-/api/users
-/api/categories
-/api/items
-/api/listings
-/api/availability
-/api/rental-requests
-/api/bookings
-/api/conversations
-/api/messages
-/api/ratings
-/api/notifications
-/api/admin
-```
-
-API documentation will be available through Swagger/OpenAPI.
-
----
-
-# Security
-
-RentLoop uses Spring Security with JWT-based authentication.
-
-Security principles include:
-
-* Passwords are never stored in plain text.
-* Passwords are hashed using BCrypt.
-* JWT secrets are stored outside source code.
-* Protected APIs require authentication.
-* Administrative APIs require ADMIN authorization.
-* Users can only modify resources they are authorized to modify.
-* Input validation is applied to API requests.
-
----
-
-# Project Status
-
-> **Status: In Development**
-
-The project is being developed incrementally, with each backend module implemented, tested, reviewed, and integrated before moving to the next phase.
-
-### Current Development
-
-```text
-[ ] Phase 1 — Project Setup
-[ ] Phase 2 — Database Foundation
-[ ] Phase 3 — Authentication & Security
-[ ] Phase 4 — User & Category APIs
-[ ] Phase 5 — Items & Listings
-[ ] Phase 6 — Availability & Search
-[ ] Phase 7 — Rental Requests
-[ ] Phase 8 — Matching Engine
-[ ] Phase 9 — Booking
-[ ] Phase 10 — WebSocket Chat
-[ ] Phase 11 — Notifications
-[ ] Phase 12 — Ratings & Reviews
-[ ] Phase 13 — Administration
-[ ] Phase 14 — Testing & Documentation
-[ ] Phase 15 — Redis
-[ ] Phase 16 — Kafka
-```
-
-This checklist should be updated as development progresses.
-
----
-
-# Getting Started
-
-## Prerequisites
-
-Install the following:
-
-* JDK 21
-* Maven
-* MySQL
-* Git
-
-Verify installations:
+| Requirement | Version |
+|---|---|
+| JDK | 17+ |
+| Maven | 3.9+ |
+| MySQL | 8.0+ |
+| Node.js | 18+ |
+| Git | Any |
 
 ```bash
+# Verify installations
 java -version
 mvn -version
 mysql --version
+node --version
 git --version
 ```
 
----
-
-## Clone the Repository
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/rentloop.git
-cd rentloop
+git clone https://github.com/manthansharma6767/RentLoop-Backend.git
+cd RentLoop-Backend
 ```
 
----
-
-## Database Setup
-
-Create the database:
+### 2. Database Setup
 
 ```sql
 CREATE DATABASE rentloop_db;
 ```
 
-Configure the application using environment variables or local configuration.
+### 3. Configure Environment Variables
 
-Example:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/rentloop_db
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-```
-
-Do not commit real credentials to GitHub.
-
----
-
-# Environment Variables
-
-Example:
-
-```text
-DB_USERNAME=
-DB_PASSWORD=
-JWT_SECRET=
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-GOOGLE_MAPS_API_KEY=
-```
-
-Keep secrets outside version control.
-
-Add local environment/configuration files to `.gitignore`.
-
----
-
-# Running the Backend
-
-Using Maven:
+Copy the example file and fill in your values:
 
 ```bash
-./mvnw spring-boot:run
+cp .env.example .env
 ```
 
-On Windows:
+```env
+# Database
+DB_USERNAME=your_database_username
+DB_PASSWORD=your_database_password
 
-```powershell
+# JWT
+JWT_SECRET=your_base64_encoded_secret
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Google Maps
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+> ⚠️ **Never commit real credentials.** The `.env` file is excluded via `.gitignore`.
+
+### 4. Run the Backend
+
+```bash
+# Linux / macOS
+./mvnw spring-boot:run
+
+# Windows
 .\mvnw.cmd spring-boot:run
 ```
 
-Or build the application:
+The API server starts at `http://localhost:8080`.
+
+### 5. Run the Frontend
 
 ```bash
-./mvnw clean package
+cd rentloop-frontend
+npm install
+npm run dev
 ```
+
+The dev server starts at `http://localhost:5173`.
 
 ---
 
-# Testing
+## 📡 API Reference
 
-The project uses:
+All endpoints are prefixed with `/api`.
 
-* JUnit
-* Mockito
-* Spring Boot Test
+| Module | Endpoint | Description |
+|---|---|---|
+| **Auth** | `POST /api/auth/register` | User registration |
+| | `POST /api/auth/login` | Login & JWT issuance |
+| **Users** | `GET /api/users/profile` | Get user profile |
+| | `PUT /api/users/profile` | Update profile |
+| **Categories** | `GET /api/categories` | List categories |
+| | `POST /api/categories` | Create category (Admin) |
+| **Items** | `POST /api/items` | Create item |
+| | `GET /api/items` | List user's items |
+| **Listings** | `POST /api/listings` | Create listing |
+| | `GET /api/listings` | Search & filter listings |
+| | `PUT /api/listings/{id}` | Update listing |
+| | `DELETE /api/listings/{id}` | Delete listing |
+| **Bookings** | `POST /api/bookings` | Request booking |
+| | `PUT /api/bookings/{id}/confirm` | Confirm booking |
+| | `PUT /api/bookings/{id}/cancel` | Cancel booking |
+| | `PUT /api/bookings/{id}/return` | Return item |
+| **Rental Requests** | `POST /api/rental-requests` | Create request |
+| | `GET /api/rental-requests` | List requests |
+| | `PUT /api/rental-requests/{id}` | Update request |
+| **Chat** | `WS /ws` | WebSocket endpoint |
+| | `GET /api/conversations` | List conversations |
+| | `GET /api/messages/{conversationId}` | Get messages |
+| **Reviews** | `POST /api/ratings` | Submit review |
+| | `GET /api/ratings/user/{id}` | Get user reviews |
+| **Notifications** | `GET /api/notifications` | Get notifications |
+| | `PUT /api/notifications/{id}/read` | Mark as read |
 
-Run tests:
+> 📬 A **Postman collection** is included in the `postman/` directory for quick API testing.
+
+---
+
+## 🗺 Development Roadmap
+
+| Phase | Module | Status |
+|:---:|---|:---:|
+| 1 | Project Setup & Configuration | ✅ |
+| 2 | Database Foundation (User, Category, Item, ItemAttribute) | ✅ |
+| 3 | Authentication & Security (JWT, BCrypt, Spring Security) | ✅ |
+| 4 | User & Category APIs | ✅ |
+| 5 | Items & Listings | ✅ |
+| 6 | Availability & Search | ✅ |
+| 7 | Rental Requests | ✅ |
+| 8 | Matching Engine | ✅ |
+| 9 | Booking Lifecycle | ✅ |
+| 10 | Real-Time Chat (WebSocket + STOMP) | ✅ |
+| 11 | Notifications | ✅ |
+| 12 | Ratings & Reviews | ✅ |
+| 13 | React Frontend (Dashboard, Rent, Requests, Owner Panel) | ✅ |
+| 14 | CI/CD Pipeline (GitHub Actions) | ✅ |
+| 15 | Administration Panel | 🔜 |
+| 16 | Redis (Caching, Rate Limiting, Booking Locks) | 🔜 |
+| 17 | Kafka (Event-Driven Processing) | 🔜 |
+| 18 | Swagger / OpenAPI Documentation | 🔜 |
+| 19 | Comprehensive Test Suite | 🔜 |
+
+---
+
+## 🧪 Testing
 
 ```bash
+# Run all tests
 ./mvnw test
+
+# Windows
+.\mvnw.cmd test
 ```
 
-API testing can be performed using Postman.
+The CI pipeline automatically runs tests on every push and pull request to `main`, using a MySQL 8.4 service container for integration testing.
 
 ---
 
-# API Documentation
+## 🔒 Security Practices
 
-Swagger/OpenAPI will be used to document and test the REST API.
-
-Once enabled, the Swagger UI will be available through the application's configured Swagger endpoint.
+- Passwords hashed with **BCrypt** — never stored in plain text
+- **JWT secrets** stored as environment variables, never in source code
+- All protected endpoints require a valid `Authorization: Bearer <token>` header
+- Admin-only operations gated by `ADMIN` role
+- Ownership validation on update/delete operations
+- Input validated at API boundaries via **Jakarta Validation**
+- Centralized exception handling with meaningful HTTP status codes
 
 ---
 
-# Git Workflow
+## 🌱 Future Enhancements
 
-Recommended development workflow:
+| Feature | Description |
+|---|---|
+| 💳 Payment Gateway | Integrated rental payments |
+| 🔒 Escrow Deposits | Secure security deposit handling |
+| 🤖 AI-Powered Search | Smart item recommendations |
+| 📸 Vision Categorization | Auto-categorize items from photos |
+| 🚚 Delivery Integration | Logistics for item handoff |
+| 📱 Mobile App | Native Android/iOS client |
+| 📊 Dynamic Pricing | Demand-based rental pricing |
+| 🛡️ Rental Insurance | Coverage for rented items |
 
-```text
-main
- │
- ├── develop
- │     │
- │     ├── feature/auth
- │     ├── feature/listings
- │     ├── feature/bookings
- │     └── feature/chat
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit with meaningful messages (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Commit Convention
+
+```
+feat:     New feature
+fix:      Bug fix
+docs:     Documentation changes
+style:    Code formatting
+refactor: Code restructuring
+test:     Adding/updating tests
+chore:    Build/config changes
 ```
 
-Use meaningful commit messages.
-
-Examples:
-
-```text
-feat: add user registration
-feat: implement JWT authentication
-feat: add item and category entities
-feat: implement listing creation
-feat: add rental request matching
-feat: implement booking workflow
-feat: add websocket chat
-fix: prevent overlapping bookings
-test: add booking service tests
-docs: update API documentation
-```
-
 ---
 
-# Future Enhancements
+## 👨‍💻 Author
 
-Potential future features include:
-
-* Integrated payment gateway
-* Escrow-style security deposits
-* AI-assisted search
-* Personalized recommendations
-* Computer-vision-based item categorization
-* Delivery/logistics integration
-* Rental insurance
-* Dynamic pricing
-* Native mobile application
-
-These features are outside the initial MVP and will only be considered after the core platform is stable.
-
----
-
-# Project Objectives
-
-The project aims to demonstrate practical implementation of:
-
-* REST API development
-* Spring Boot
-* Spring Security
-* JWT authentication
-* Relational database design
-* JPA/Hibernate
-* Real-time communication
-* Business-rule implementation
-* Search and matching
-* Booking and availability management
-* Event-driven architecture
-* Caching
-* Automated testing
-* API documentation
-* Software engineering practices
-
----
-
-# Contributors
-
-**RentLoop — RBU Project**
-
-* Manthan Sharma
+**Manthan Sharma**
 
 Department of Computer Science and Engineering
 Ramdeobaba University
 
+[![GitHub](https://img.shields.io/badge/GitHub-manthansharma6767-181717?style=flat&logo=github)](https://github.com/manthansharma6767)
+
 ---
 
-# License
+## 📄 License
 
-This project is developed for academic and educational purposes.
+This project is developed for **academic and educational purposes** at Ramdeobaba University.
 
-A production deployment license and usage policy can be defined separately if the platform is released publicly.
+A production deployment license and usage policy will be defined separately if the platform is released publicly.
+
+---
+
+<div align="center">
+
+**Built with ❤️ at Ramdeobaba University**
+
+</div>
