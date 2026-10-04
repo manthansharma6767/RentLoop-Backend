@@ -1,0 +1,32 @@
+$kind: http-request
+name: Create Booking
+method: POST
+url: '{{baseUrl}}/api/bookings'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{renterToken}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "listingId": {{listingId}},
+      "startDate": "2025-08-01",
+      "endDate": "2025-08-05"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+        pm.response.to.have.status(201);
+      });
+      var json = pm.response.json();
+      if (json.id) {
+        pm.environment.set("bookingId", json.id);
+      }

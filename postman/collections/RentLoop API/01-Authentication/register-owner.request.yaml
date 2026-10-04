@@ -1,0 +1,28 @@
+$kind: http-request
+name: Register Owner
+method: POST
+url: '{{baseUrl}}/api/auth/register'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Test Owner",
+      "email": "{{ownerEmail}}",
+      "password": "{{ownerPassword}}",
+      "phone": "9876543210"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      var json = pm.response.json();
+      if (json.token) {
+        pm.environment.set("ownerToken", json.token);
+      }

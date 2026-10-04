@@ -67,10 +67,10 @@ public class NotificationService {
     @Transactional
     public NotificationResponse markAsRead(Long notificationId, String userEmail) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + notificationId));
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found with id: " + notificationId));
 
         if (!notification.getRecipientEmail().equals(userEmail)) {
-            throw new RuntimeException("You can only mark your own notifications as read");
+            throw new org.springframework.security.access.AccessDeniedException("You can only mark your own notifications as read");
         }
 
         notification.setRead(true);

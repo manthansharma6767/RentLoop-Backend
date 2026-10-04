@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get Rental Request by ID
+method: GET
+url: '{{baseUrl}}/api/rental-requests/{{requestId}}'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{renterToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });

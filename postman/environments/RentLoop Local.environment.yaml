@@ -1,0 +1,58 @@
+name: RentLoop Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+    enabled: true
+    type: default
+  - key: ownerToken
+    value: ''
+    enabled: true
+    type: default
+  - key: renterToken
+    value: ''
+    enabled: true
+    type: default
+  - key: adminToken
+    value: ''
+    enabled: true
+    type: default
+  - key: ownerEmail
+    value: owner1@test.com
+    enabled: true
+    type: default
+  - key: renterEmail
+    value: renter1@test.com
+    enabled: true
+    type: default
+  - key: ownerPassword
+    value: Password@123
+    enabled: true
+    type: default
+  - key: renterPassword
+    value: Password@123
+    enabled: true
+    type: default
+  - key: categoryId
+    value: ''
+    enabled: true
+    type: default
+  - key: itemId
+    value: ''
+    enabled: true
+    type: default
+  - key: listingId
+    value: ''
+    enabled: true
+    type: default
+  - key: requestId
+    value: ''
+    enabled: true
+    type: default
+  - key: bookingId
+    value: ''
+    enabled: true
+    type: default
+  - key: notificationId
+    value: ''
+    enabled: true
+    type: default

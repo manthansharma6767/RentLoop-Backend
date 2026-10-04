@@ -47,6 +47,20 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.approveBooking(userDetails.getUsername(), id));
     }
 
+    @PatchMapping("/{id}/start")
+    public ResponseEntity<BookingResponse> startBooking(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.startBooking(userDetails.getUsername(), id));
+    }
+
+    @PatchMapping("/{id}/return")
+    public ResponseEntity<BookingResponse> returnBooking(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.returnBooking(userDetails.getUsername(), id));
+    }
+
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<BookingResponse> cancelBooking(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -54,3 +68,4 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.cancelBooking(userDetails.getUsername(), id));
     }
 }
+

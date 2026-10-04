@@ -22,13 +22,15 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public BookingResponse createBooking(String userEmail, BookingRequest request) {
         User renter = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Listing listing = listingRepository.findById(request.getListingId())
+        // Step 5: Pessimistic write lock on listing row to prevent concurrent overlapping bookings
+        Listing listing = listingRepository.findByIdWithLock(request.getListingId())
                 .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
 
         if (listing.getStatus() != ListingStatus.ACTIVE) {
@@ -39,12 +41,12 @@ public class BookingService {
             throw new IllegalArgumentException("Start date cannot be after end date.");
         }
 
-        // Prevent the owner from booking their own listing
+        // Prevent owner from booking own listing
         if (listing.getItem().getOwner().getEmail().equals(userEmail)) {
             throw new IllegalArgumentException("You cannot book your own listing.");
         }
 
-        // Strict date availability check — same overlap logic used in search
+        // Strict date availability check
         boolean hasConflict = bookingRepository.existsOverlappingBooking(
                 listing.getId(),
                 List.of(BookingStatus.CONFIRMED, BookingStatus.ACTIVE),
@@ -55,10 +57,10 @@ public class BookingService {
             throw new IllegalArgumentException("The listing is not available for the selected dates.");
         }
 
-        // Calculate total amount: number of days × pricePerDay
+        // Calculate total amount
         long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
         if (days <= 0) {
-            days = 1; // Minimum 1-day rental for same-day bookings
+            days = 1;
         }
         BigDecimal totalAmount = listing.getPricePerDay().multiply(BigDecimal.valueOf(days));
 
@@ -72,6 +74,15 @@ public class BookingService {
         booking.setStatus(BookingStatus.REQUESTED);
 
         Booking saved = bookingRepository.save(booking);
+
+        // Step 8: Notification to listing owner
+        String ownerEmail = listing.getItem().getOwner().getEmail();
+        notificationService.createAndSend(
+                ownerEmail,
+                "New rental request received for your listing: " + listing.getTitle(),
+                NotificationType.BOOKING_UPDATE
+        );
+
         return mapToResponse(saved);
     }
 
@@ -80,7 +91,6 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
-        // OWNERSHIP AUTHORIZATION CHECK — only the item owner can approve
         if (!booking.getListing().getItem().getOwner().getEmail().equals(ownerEmail)) {
             throw new IllegalArgumentException("You are not authorized to approve this booking.");
         }
@@ -91,6 +101,66 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking saved = bookingRepository.save(booking);
+
+        // Step 8: Notification to renter
+        notificationService.createAndSend(
+                booking.getRenter().getEmail(),
+                "Your booking request for '" + booking.getListing().getTitle() + "' has been approved!",
+                NotificationType.BOOKING_UPDATE
+        );
+
+        return mapToResponse(saved);
+    }
+
+    @Transactional
+    public BookingResponse startBooking(String ownerEmail, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        if (!booking.getListing().getItem().getOwner().getEmail().equals(ownerEmail)) {
+            throw new IllegalArgumentException("You are not authorized to start this booking.");
+        }
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new IllegalArgumentException("Only bookings with status CONFIRMED can be started.");
+        }
+
+        booking.setStatus(BookingStatus.ACTIVE);
+        Booking saved = bookingRepository.save(booking);
+
+        // Step 8: Notification to renter
+        notificationService.createAndSend(
+                booking.getRenter().getEmail(),
+                "Your rental for '" + booking.getListing().getTitle() + "' is now active.",
+                NotificationType.BOOKING_UPDATE
+        );
+
+        return mapToResponse(saved);
+    }
+
+    @Transactional
+    public BookingResponse returnBooking(String ownerEmail, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        if (!booking.getListing().getItem().getOwner().getEmail().equals(ownerEmail)) {
+            throw new IllegalArgumentException("You are not authorized to mark this booking as returned.");
+        }
+
+        if (booking.getStatus() != BookingStatus.ACTIVE) {
+            throw new IllegalArgumentException("Only bookings with status ACTIVE can be marked as returned.");
+        }
+
+        booking.setStatus(BookingStatus.RETURNED);
+        Booking saved = bookingRepository.save(booking);
+
+        // Step 8: Notification to renter
+        notificationService.createAndSend(
+                booking.getRenter().getEmail(),
+                "Your rental for '" + booking.getListing().getTitle() + "' has been marked as returned.",
+                NotificationType.BOOKING_UPDATE
+        );
+
         return mapToResponse(saved);
     }
 
@@ -99,7 +169,6 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
 
-        // Both the renter and the item owner can cancel
         boolean isRenter = booking.getRenter().getEmail().equals(userEmail);
         boolean isOwner = booking.getListing().getItem().getOwner().getEmail().equals(userEmail);
 
@@ -117,6 +186,15 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking saved = bookingRepository.save(booking);
+
+        // Step 8: Notification to the other party
+        String recipient = isRenter ? booking.getListing().getItem().getOwner().getEmail() : booking.getRenter().getEmail();
+        notificationService.createAndSend(
+                recipient,
+                "Booking for '" + booking.getListing().getTitle() + "' was cancelled.",
+                NotificationType.BOOKING_UPDATE
+        );
+
         return mapToResponse(saved);
     }
 
@@ -148,3 +226,4 @@ public class BookingService {
         return response;
     }
 }
+

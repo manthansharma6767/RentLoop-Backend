@@ -1,0 +1,36 @@
+$kind: http-request
+name: Create Rental Request
+method: POST
+url: '{{baseUrl}}/api/rental-requests'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{renterToken}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "categoryId": {{categoryId}},
+      "description": "Need a DSLR camera for a weekend trip",
+      "budgetPerDay": 600.00,
+      "startDate": "2025-08-01",
+      "endDate": "2025-08-05",
+      "latitude": 19.0760,
+      "longitude": 72.8777
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+        pm.response.to.have.status(201);
+      });
+      var json = pm.response.json();
+      if (json.id) {
+        pm.environment.set("requestId", json.id);
+      }

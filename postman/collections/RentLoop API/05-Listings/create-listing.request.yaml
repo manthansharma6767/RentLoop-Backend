@@ -1,0 +1,36 @@
+$kind: http-request
+name: Create Listing
+method: POST
+url: '{{baseUrl}}/api/listings'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{ownerToken}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "itemId": {{itemId}},
+      "title": "Canon DSLR for Rent",
+      "pricePerDay": 500.00,
+      "depositAmount": 2000.00,
+      "latitude": 19.0760,
+      "longitude": 72.8777,
+      "imageUrls": []
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201", function () {
+        pm.response.to.have.status(201);
+      });
+      var json = pm.response.json();
+      if (json.id) {
+        pm.environment.set("listingId", json.id);
+      }

@@ -56,11 +56,17 @@
 </td>
 <td width="50%">
 
-### 📅 Booking Lifecycle
-- State-based workflow: `REQUESTED → CONFIRMED → ACTIVE → RETURNED`
-- Cancellation support
-- Date-overlap & availability validation
-- Booking history tracking
+### 📅 Booking Lifecycle & Concurrency Control
+- Strict state-based workflow: `REQUESTED → CONFIRMED → ACTIVE → RETURNED`
+- Managed state transitions:
+  - Renter submits request (`REQUESTED`)
+  - Listing owner approves request (`CONFIRMED`)
+  - Listing owner marks rental start (`ACTIVE`)
+  - Listing owner marks rental end/return (`RETURNED`)
+  - Pre-completion cancellation by authorized parties (`CANCELLED`)
+- Database pessimistic write locking (`PESSIMISTIC_WRITE`) on listing rows to prevent concurrent overlapping bookings
+- Authenticated identity derived strictly server-side from JWT Principal
+- Server-side date-overlap and availability validation
 
 </td>
 </tr>

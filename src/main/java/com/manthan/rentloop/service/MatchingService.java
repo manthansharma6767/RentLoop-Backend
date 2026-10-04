@@ -2,6 +2,7 @@ package com.manthan.rentloop.service;
 
 import com.manthan.rentloop.dto.ListingResponse;
 import com.manthan.rentloop.model.Listing;
+import com.manthan.rentloop.model.NotificationType;
 import com.manthan.rentloop.model.RentalRequest;
 import com.manthan.rentloop.model.RequestMatch;
 import com.manthan.rentloop.repository.ListingRepository;
@@ -23,6 +24,7 @@ public class MatchingService {
     private final ListingRepository listingRepository;
     private final RequestMatchRepository requestMatchRepository;
     private final ListingService listingService;
+    private final NotificationService notificationService;
 
     /**
      * Finds listings matching a rental request's criteria and persists them as RequestMatch records.
@@ -64,9 +66,16 @@ public class MatchingService {
             newlyMatched.add(listing);
         }
 
+        // Step 8: Send real-time notification if matches were found
+        if (!matchedListings.isEmpty()) {
+            String msg = String.format("Found %d matching listing(s) for your rental request!", matchedListings.size());
+            notificationService.createAndSend(userEmail, msg, NotificationType.MATCH_FOUND);
+        }
+
         // Return all current matches as DTOs (both existing and new)
         return newlyMatched.stream()
                 .map(listingService::mapToResponse)
                 .collect(Collectors.toList());
     }
 }
+

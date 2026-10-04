@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get My Items Bookings (Owner)
+method: GET
+url: '{{baseUrl}}/api/bookings/my-items'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{ownerToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });

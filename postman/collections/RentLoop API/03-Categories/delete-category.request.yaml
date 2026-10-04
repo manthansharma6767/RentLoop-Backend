@@ -1,0 +1,17 @@
+$kind: http-request
+name: Delete Category (Admin)
+method: DELETE
+url: '{{baseUrl}}/api/categories/{{categoryId}}'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{adminToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 204", function () {
+        pm.response.to.have.status(204);
+      });

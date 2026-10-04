@@ -23,10 +23,8 @@ public class ReviewDto {
 
     private String reviewerEmail;
 
-    @NotNull(message = "targetEmail is required")
     private String targetEmail;
 
-    @NotNull(message = "listingId is required")
     private Long listingId;
 
     @NotNull(message = "rating is required")
