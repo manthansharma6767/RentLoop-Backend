@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -79,5 +80,42 @@ class CategoryServiceTest {
         );
 
         assertTrue(ex.getMessage().contains("Category not found"));
+    }
+
+    @Test
+    void updateCategory_Success() {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Electronics Updated");
+        request.setDescription("New description");
+
+        Category updated = new Category();
+        updated.setId(1L);
+        updated.setName("Electronics Updated");
+        updated.setDescription("New description");
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(categoryRepository.save(any(Category.class))).thenReturn(updated);
+
+        CategoryDto result = categoryService.updateCategory(1L, request);
+
+        assertNotNull(result);
+        assertEquals("Electronics Updated", result.getName());
+        assertEquals("New description", result.getDescription());
+        verify(categoryRepository, times(1)).save(any(Category.class));
+    }
+
+    @Test
+    void updateCategory_NotFound_ThrowsException() {
+        when(categoryRepository.findById(99L)).thenReturn(Optional.empty());
+
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Some Name");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                categoryService.updateCategory(99L, request)
+        );
+
+        assertTrue(ex.getMessage().contains("Category not found with ID: 99"));
+        verify(categoryRepository, never()).save(any());
     }
 }

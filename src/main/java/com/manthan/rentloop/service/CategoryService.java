@@ -34,6 +34,16 @@ public class CategoryService {
     }
 
     @Transactional
+    public CategoryDto updateCategory(Long id, CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with ID: " + id));
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        Category saved = categoryRepository.save(category);
+        return mapToDto(saved);
+    }
+
+    @Transactional
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found with ID: " + id);

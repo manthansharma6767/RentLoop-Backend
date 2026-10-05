@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -87,6 +88,39 @@ class CategoryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateCategory_AdminUser_Returns200() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Books Updated");
+        request.setDescription("All kinds of books");
+
+        CategoryDto dto = new CategoryDto();
+        dto.setId(1L);
+        dto.setName("Books Updated");
+        dto.setDescription("All kinds of books");
+
+        when(categoryService.updateCategory(eq(1L), any(CategoryRequest.class))).thenReturn(dto);
+
+        mockMvc.perform(put("/api/categories/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Books Updated"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateCategory_NormalUser_Returns403() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Books Updated");
+
+        mockMvc.perform(put("/api/categories/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
     }
 
     @Test

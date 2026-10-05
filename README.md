@@ -364,6 +364,16 @@ All endpoints are prefixed with `/api`.
 | | `PUT /api/users/profile` | Update profile |
 | **Categories** | `GET /api/categories` | List categories |
 | | `POST /api/categories` | Create category (Admin) |
+| | `PUT /api/categories/{id}` | Update category (Admin) |
+| | `DELETE /api/categories/{id}` | Delete category (Admin) |
+| **Admin Management** | `GET /api/admin/users` | List all users (Admin) |
+| | `GET /api/admin/users/{id}` | View user profile by ID (Admin) |
+| | `GET /api/admin/listings` | View all listings regardless of status (Admin) |
+| | `DELETE /api/admin/listings/{id}` | Force-remove listing (Admin) |
+| | `GET /api/admin/bookings` | View all bookings (Admin) |
+| | `GET /api/admin/rental-requests` | View all rental requests (Admin) |
+| | `GET /api/admin/reviews` | View all reviews (Admin) |
+| | `DELETE /api/admin/reviews/{id}` | Hard-delete inappropriate review (Admin) |
 | **Items** | `POST /api/items` | Create item |
 | | `GET /api/items` | List user's items |
 | **Listings** | `POST /api/listings` | Create listing |
@@ -407,7 +417,7 @@ All endpoints are prefixed with `/api`.
 | 12 | Ratings & Reviews | ✅ |
 | 13 | React Frontend (Dashboard, Rent, Requests, Owner Panel) | ✅ |
 | 14 | CI/CD Pipeline (GitHub Actions) | ✅ |
-| 15 | Administration Panel | 🔜 |
+| 15 | Administration Panel | ✅ |
 | 16 | Redis (Caching, Rate Limiting, Booking Locks) | 🔜 |
 | 17 | Kafka (Event-Driven Processing) | 🔜 |
 | 18 | Swagger / OpenAPI Documentation | 🔜 |
